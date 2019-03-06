@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'itemModel.dart';
+import 'database.dart' as database;
 
 void main() => runApp(MyApp());
 
@@ -15,14 +16,22 @@ class _MyAppState extends State<MyApp> {
 
   addItem(String nameItem) {
     Item item = new Item(nameItem);
+    database.MyDatabase.addItem(item);
     setState(() {
       this.list.add(item);
     });
   }
 
+  void getItems() async {
+    final newList = await database.MyDatabase.getItems();
+    this.setState(() {
+      this.list = newList;
+    });
+  }
+
   @override
   void initState() {
-    print('sdadasdsa');
+    this.getItems();
   }
 
   @override
@@ -84,10 +93,10 @@ class _MyAppState extends State<MyApp> {
                         direction: DismissDirection.startToEnd,
                         child: ListTile(
                           trailing: Checkbox(
-                              value: item.checked,
+                              value: item.checked == 1,
                               onChanged: (param) {
                                 setState(() {
-                                  item.checked = !item.checked;
+                                  item.checked = item.checked == 1 ? 0 : 1;
                                 });
                               }),
                           title: Text(item.name),
