@@ -10,10 +10,10 @@ const String kColumnChecked = 'checked';
 
 class MyDatabase {
   // Cria a propriedade _instance com MyDatabase
-  static MyDatabase _instance = new MyDatabase();
+  static MyDatabase _instance = new MyDatabase._internal();
 
   // Informa que a classe possui um contructor factory
-  MyDatabase.internal();
+  MyDatabase._internal();
 
   // Retorna a instancia gerada internamente
   factory MyDatabase() => _instance;
