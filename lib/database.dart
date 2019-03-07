@@ -9,50 +9,57 @@ const String kColumnName = 'name';
 const String kColumnChecked = 'checked';
 
 class MyDatabase {
-  static Database db;
+  // Cria a propriedade _instance com MyDatabase
+  static MyDatabase _instance = new MyDatabase();
 
-  static Future<Database> init() async {
-    db = await initDatabase();
-    return db;
+  // Informa que a classe possui um contructor factory
+  MyDatabase.internal();
+
+  // Retorna a instancia gerada internamente
+  factory MyDatabase() => _instance;
+
+  Database _db;
+
+  Future<Database> get db async {
+    if (this._db != null) {
+      return _db;
+    }
+    return await init();
   }
 
-  static Future<Database> initDatabase() async {
+  Future<Database> init() async {
     var pathDatabase = await getDatabasesPath();
     var path = join(pathDatabase, kDatabaseName);
-
-    return await openDatabase(path, version: 1, onCreate: _createDatabase);
+    return await openDatabase(path, version: 1, onCreate: this._createDatabase);
   }
 
-  static void _createDatabase(Database db, int newerVersion) async {
-    await db.execute(
-        'CREATE TABLE $kTableName( $kColumnId INTEGER PRIMARY KEY, $kColumnName TEXT, $kColumnChecked INTEGER)');
-  }
-
-  static Future<Item> addItem(Item item) async {
-    await init();
+  Future<Item> addItem(Item item) async {
+    Database db = await this.db;
     db.insert(kTableName, item.toMap());
     final listItem = await db.rawQuery('SELECT * FROM $kTableName');
     return new Item.fromJson(listItem.last);
   }
 
-  static Future<List> getItems() async {
-    await init();
-    List<Map<String, dynamic>> response =
-        await db.rawQuery('SELECT * FROM $kTableName');
-    List<Item> list = [];
-    for (Map item in response) {
-      list.add(Item.fromJson(item));
-    }
-    return list;
+  Future<List> getItems() async {
+    Database db = await this.db;
+    List<Map> response = await db.rawQuery('SELECT * FROM $kTableName');
+    return response.map((item) => Item.fromJson(item)).toList();
   }
 
-  static Future<int> removeItem(id) async {
+  Future<int> removeItem(id) async {
+    Database db = await this.db;
     return await db
         .delete(kTableName, where: "$kColumnId = ?", whereArgs: [id]);
   }
 
-  static Future<int> updateItem(Item item) async {
+  Future<int> updateItem(Item item) async {
+    Database db = await this.db;
     return await db.update(kTableName, item.toMap(),
         where: "$kColumnId = ?", whereArgs: [item.id]);
+  }
+
+  void _createDatabase(Database db, int newerVersion) async {
+    await db.execute(
+        'CREATE TABLE $kTableName( $kColumnId INTEGER PRIMARY KEY, $kColumnName TEXT, $kColumnChecked INTEGER)');
   }
 }

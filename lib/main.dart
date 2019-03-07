@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'itemModel.dart';
-import 'database.dart' as database;
+import 'database.dart';
 
 void main() => runApp(MyApp());
 
@@ -10,13 +10,13 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  MyDatabase database = new MyDatabase();
   TextEditingController _textEditingController = new TextEditingController();
-
   List<Item> list = [];
 
   addItem(String nameItem) async {
     Item item = new Item(nameItem);
-    Item itemDatabase = await database.MyDatabase.addItem(item);
+    Item itemDatabase = await database.addItem(item);
     item.id = itemDatabase.id;
     setState(() {
       this.list.add(item);
@@ -24,7 +24,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void getItems() async {
-    final newList = await database.MyDatabase.getItems();
+    final newList = await database.getItems();
     this.setState(() {
       this.list = newList;
     });
@@ -34,14 +34,14 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       item.checked = item.checked == 1 ? 0 : 1;
     });
-    await database.MyDatabase.updateItem(item);
+    await database.updateItem(item);
   }
 
   void removeItem(Item item, int index) async {
     setState(() {
       this.list.removeAt(index);
     });
-    await database.MyDatabase.removeItem(item.id);
+    await database.removeItem(item.id);
   }
 
   @override
