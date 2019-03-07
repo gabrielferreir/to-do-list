@@ -28,12 +28,11 @@ class MyDatabase {
         'CREATE TABLE $kTableName( $kColumnId INTEGER PRIMARY KEY, $kColumnName TEXT, $kColumnChecked INTEGER)');
   }
 
-  static addItem(Item item) async {
+  static Future<Item> addItem(Item item) async {
     await init();
-    print(item.toMap());
     db.insert(kTableName, item.toMap());
-    final a = await db.rawQuery('SELECT * FROM $kTableName');
-    print(a);
+    final listItem = await db.rawQuery('SELECT * FROM $kTableName');
+    return new Item.fromJson(listItem.last);
   }
 
   static Future<List> getItems() async {
@@ -45,5 +44,15 @@ class MyDatabase {
       list.add(Item.fromJson(item));
     }
     return list;
+  }
+
+  static Future<int> removeItem(id) async {
+    return await db
+        .delete(kTableName, where: "$kColumnId = ?", whereArgs: [id]);
+  }
+
+  static Future<int> updateItem(Item item) async {
+    return await db.update(kTableName, item.toMap(),
+        where: "$kColumnId = ?", whereArgs: [item.id]);
   }
 }

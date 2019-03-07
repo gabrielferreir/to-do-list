@@ -14,9 +14,10 @@ class _MyAppState extends State<MyApp> {
 
   List<Item> list = [];
 
-  addItem(String nameItem) {
+  addItem(String nameItem) async {
     Item item = new Item(nameItem);
-    database.MyDatabase.addItem(item);
+    Item itemDatabase = await database.MyDatabase.addItem(item);
+    item.id = itemDatabase.id;
     setState(() {
       this.list.add(item);
     });
@@ -27,6 +28,20 @@ class _MyAppState extends State<MyApp> {
     this.setState(() {
       this.list = newList;
     });
+  }
+
+  void updateItem(Item item) async {
+    setState(() {
+      item.checked = item.checked == 1 ? 0 : 1;
+    });
+    await database.MyDatabase.updateItem(item);
+  }
+
+  void removeItem(Item item, int index) async {
+    setState(() {
+      this.list.removeAt(index);
+    });
+    await database.MyDatabase.removeItem(item.id);
   }
 
   @override
@@ -76,11 +91,6 @@ class _MyAppState extends State<MyApp> {
                     var item = this.list[index];
                     return Dismissible(
                         key: UniqueKey(),
-                        confirmDismiss: (_) {
-                          setState(() {
-                            this.list.removeAt(index);
-                          });
-                        },
                         background: Container(
                           color: Colors.red,
                           alignment: Alignment(-0.9, 0),
@@ -89,15 +99,15 @@ class _MyAppState extends State<MyApp> {
                             color: Colors.white,
                           ),
                         ),
-                        onDismissed: (direction) {},
+                        onDismissed: (direction) {
+                          removeItem(item, index);
+                        },
                         direction: DismissDirection.startToEnd,
                         child: ListTile(
                           trailing: Checkbox(
                               value: item.checked == 1,
                               onChanged: (param) {
-                                setState(() {
-                                  item.checked = item.checked == 1 ? 0 : 1;
-                                });
+                                updateItem(item);
                               }),
                           title: Text(item.name),
                         ));
